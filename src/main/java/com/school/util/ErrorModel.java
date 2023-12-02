@@ -10,4 +10,5 @@ import lombok.Setter;
 public class ErrorModel {
     private String status;
     private String message;
+    private String ukraineMessage;
 }

@@ -1,6 +1,6 @@
 package com.school.service;
 
-import com.school.dto.PersonDTO;
+import com.school.dto.TeacherRegistrationDTO;
 import com.school.model.Person;
 import com.school.model.Role;
 import com.school.model.School;
@@ -25,15 +25,15 @@ public class SaveUserService {
         this.personRepository = personRepository;
     }
 
-    public void saveTeacher(PersonDTO personDTO) {
+    public void saveTeacher(TeacherRegistrationDTO teacherRegistrationDTO) {
         Role role = roleRepository.findByName(RoleEnum.ROLE_TEACHER);
-        School school = schoolRepository.findByCode(personDTO.getCode());
+        School school = schoolRepository.findByCode(teacherRegistrationDTO.getCode());
 
-        Person person = new Person(personDTO.getName(),
-                                    personDTO.getSurname(),
-                                    personDTO.getDate(),
-                                    personDTO.getUsername(),
-                                    passwordEncoder.encode(personDTO.getPassword()),
+        Person person = new Person(teacherRegistrationDTO.getName(),
+                                    teacherRegistrationDTO.getSurname(),
+                                    teacherRegistrationDTO.getDate(),
+                                    teacherRegistrationDTO.getUsername(),
+                                    passwordEncoder.encode(teacherRegistrationDTO.getPassword()),
                                     role,
                                     school
         );
