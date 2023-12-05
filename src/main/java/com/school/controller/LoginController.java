@@ -12,6 +12,7 @@ import com.school.service.LoginService;
 import com.school.service.SaveUserService;
 import com.school.util.ErrorModel;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -80,18 +81,30 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> loginPage(@RequestBody LoginDTO loginDTO, Authentication authentication) {
+    public ResponseEntity<?> loginPage(@RequestBody LoginDTO loginDTO) {
+        Person person = personRepository.findByUsername(loginDTO.getUsername()).orElse(null);
 
-        if (loginService.accountAvailable(loginDTO)) {
+        if (loginService.accountAvailable(loginDTO) && person != null) {
             System.out.println("Login success");
 
-            Person person = personRepository.findByUsername(loginDTO.getUsername()).orElse(null);
-
-            return new ResponseEntity<>(jwtUtil.generateToken(person),HttpStatus.OK);
+            return new ResponseEntity<>(jwtUtil.generateToken(person), HttpStatus.OK);
         }
 
         System.out.println("Login error");
         ErrorModel error = errorService.generateError("bad", "Your password or username is incorrect!", "Ви ввели неапривльний пароль або нікнейм!");
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping("/getDataFromJwt")
+    public ResponseEntity<?> getDataFromJson(@RequestParam String jwt) {
+        try {
+            if (jwtUtil.isTokenValid(jwt)) {
+                return new ResponseEntity<>(jwtUtil.getData(jwt), HttpStatus.OK);
+            }
+        } catch (ExpiredJwtException e) {
+            return new ResponseEntity<>("Token is expired!", HttpStatus.UNAUTHORIZED);
+        }
+
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 }

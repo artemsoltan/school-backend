@@ -21,6 +21,10 @@ public class LoginService {
     public boolean accountAvailable(LoginDTO loginDTO) {
         Person person = personRepository.findByUsername(loginDTO.getUsername()).orElse(null);
 
-        return person.getUsername().equals(loginDTO.getUsername()) && passwordEncoder.matches(loginDTO.getPassword(), person.getPassword());
+        if (person != null) {
+            return person.getUsername().equals(loginDTO.getUsername()) && passwordEncoder.matches(loginDTO.getPassword(), person.getPassword());
+        }
+
+        return false;
     }
 }

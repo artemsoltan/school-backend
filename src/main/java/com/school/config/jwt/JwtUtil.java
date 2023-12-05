@@ -2,13 +2,14 @@ package com.school.config.jwt;
 
 import com.school.model.Person;
 
+import com.school.repository.PersonRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.security.core.GrantedAuthority;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -27,8 +28,30 @@ public class JwtUtil {
     @Value(value = "${jwt.expirationDate}")
     private Long expirationDate;
 
+    private final PersonRepository personRepository;
+
+    @Autowired
+    public JwtUtil(PersonRepository personRepository) {
+        this.personRepository = personRepository;
+    }
+
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public Map<?,?> getData(String token) {
+        Claims claims = Jwts
+                .parserBuilder()
+                .setSigningKey(getSignIngKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        Map<String, String> data = new HashMap<>();
+
+        data.put("username", claims.getSubject());
+        data.put("role", (String) claims.get("role"));
+
+        return data;
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -39,31 +62,31 @@ public class JwtUtil {
     public String generateToken(Person person) {
         Map<String, Object> claims = new HashMap<>();
 
-        claims.put("username", person.getUsername());
         claims.put("role", person.getRole().getName());
 
-        return generateToken(claims);
+        return generateToken(claims, person);
     }
 
     public String generateToken(
-            Map<String, Object> extraClaims
+            Map<String, Object> extraClaims, Person person
     ) {
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
                 .setIssuer("Dairy")
+                .setSubject(person.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expirationDate))
                 .signWith(getSignIngKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public boolean isTokenValid(String token, UserDetails userDetails) {
+    public boolean isTokenValid(String token) {
         final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        return personRepository.findByUsername(username).isPresent() && !isTokenExpired(token);
     }
 
-    private boolean isTokenExpired(String token) {
+    public boolean isTokenExpired(String token) {
         try {
             return extractExpiration(token).before(new Date());
         } catch (ExpiredJwtException e) {
@@ -75,7 +98,7 @@ public class JwtUtil {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    private Claims extractAllClaims(String token) {
+    public Claims extractAllClaims(String token) {
         return Jwts
                 .parserBuilder()
                 .setSigningKey(getSignIngKey())
