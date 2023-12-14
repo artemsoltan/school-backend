@@ -13,7 +13,10 @@ import com.school.service.SaveUserService;
 import com.school.util.ErrorModel;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -85,9 +88,11 @@ public class LoginController {
         Person person = personRepository.findByUsername(loginDTO.getUsername()).orElse(null);
 
         if (loginService.accountAvailable(loginDTO) && person != null) {
-            System.out.println("Login success");
-
-            return new ResponseEntity<>(jwtUtil.generateToken(person), HttpStatus.OK);
+            System.out.println("Login ok for user: " + loginDTO.getUsername());
+            return ResponseEntity.ok().header(
+                    HttpHeaders.AUTHORIZATION,
+                    jwtUtil.generateToken(person)
+            ).body("");
         }
 
         System.out.println("Login error");
@@ -96,15 +101,18 @@ public class LoginController {
     }
 
     @GetMapping("/getDataFromJwt")
-    public ResponseEntity<?> getDataFromJson(@RequestParam String jwt) {
+    public ResponseEntity<?> getDataFromJwt(@RequestHeader("Authorization") String jwt) {
+        jwt = jwt.substring(7);
         try {
-            if (jwtUtil.isTokenValid(jwt)) {
+            if (jwtUtil.isTokenValid(jwt) && jwtUtil.getData(jwt) != null) {
                 return new ResponseEntity<>(jwtUtil.getData(jwt), HttpStatus.OK);
             }
+        } catch (NullPointerException | SignatureException e) {
+            return new ResponseEntity<>("Token is incorrect", HttpStatus.UNAUTHORIZED);
         } catch (ExpiredJwtException e) {
             return new ResponseEntity<>("Token is expired!", HttpStatus.UNAUTHORIZED);
         }
 
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 }
