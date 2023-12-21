@@ -13,18 +13,14 @@ import com.school.service.SaveUserService;
 import com.school.util.ErrorModel;
 
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.userdetails.UserDetails;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api")
 public class LoginController {
 
@@ -100,11 +96,12 @@ public class LoginController {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-    @GetMapping("/getDataFromJwt")
+    @GetMapping("/getData")
     public ResponseEntity<?> getDataFromJwt(@RequestHeader("Authorization") String jwt) {
         jwt = jwt.substring(7);
         try {
             if (jwtUtil.isTokenValid(jwt) && jwtUtil.getData(jwt) != null) {
+                System.out.println("Data from token: " + jwtUtil.getData(jwt));
                 return new ResponseEntity<>(jwtUtil.getData(jwt), HttpStatus.OK);
             }
         } catch (NullPointerException | SignatureException e) {
