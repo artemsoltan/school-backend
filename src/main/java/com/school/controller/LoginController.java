@@ -10,6 +10,7 @@ import com.school.repository.SchoolRepository;
 import com.school.service.ErrorService;
 import com.school.service.LoginService;
 import com.school.service.SaveUserService;
+import com.school.service.SchoolService;
 import com.school.util.ErrorModel;
 
 import io.jsonwebtoken.ExpiredJwtException;
@@ -19,6 +20,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -31,6 +35,7 @@ public class LoginController {
     private final SaveUserService saveUserService;
     private final LoginService loginService;
     private final JwtUtil jwtUtil;
+    private final SchoolService schoolService;
 
     @Autowired
     public LoginController(PersonRepository personRepository,
@@ -39,7 +44,7 @@ public class LoginController {
                            RoleRepository roleRepository,
                            SaveUserService saveUserService,
                            LoginService loginService,
-                           JwtUtil jwtUtil) {
+                           JwtUtil jwtUtil, SchoolService schoolService) {
         this.personRepository = personRepository;
         this.schoolRepository = schoolRepository;
         this.errorService = errorService;
@@ -47,6 +52,7 @@ public class LoginController {
         this.saveUserService = saveUserService;
         this.loginService = loginService;
         this.jwtUtil = jwtUtil;
+        this.schoolService = schoolService;
     }
 
     @GetMapping("/show")
@@ -82,7 +88,6 @@ public class LoginController {
     @PostMapping("/login")
     public ResponseEntity<?> loginPage(@RequestBody LoginDTO loginDTO) {
         Person person = personRepository.findByUsername(loginDTO.getUsername()).orElse(null);
-
         if (loginService.accountAvailable(loginDTO) && person != null) {
             System.out.println("Login ok for user: " + loginDTO.getUsername());
             return ResponseEntity.ok().header(
@@ -100,9 +105,21 @@ public class LoginController {
     public ResponseEntity<?> getDataFromJwt(@RequestHeader("Authorization") String jwt) {
         jwt = jwt.substring(7);
         try {
-            if (jwtUtil.isTokenValid(jwt) && jwtUtil.getData(jwt) != null) {
-                System.out.println("Data from token: " + jwtUtil.getData(jwt));
-                return new ResponseEntity<>(jwtUtil.getData(jwt), HttpStatus.OK);
+            if (jwtUtil.isTokenValid(jwt) && !jwtUtil.extractUsername(jwt).isEmpty()) {
+                Person person = personRepository.findByUsername(jwtUtil.extractUsername(jwt)).orElse(null);
+                if (person != null) {
+                    Map<String, String> personData = new HashMap<>();
+
+                    personData.put("username", person.getUsername());
+                    personData.put("name", person.getName());
+                    personData.put("surname", person.getSurname());
+                    personData.put("date", person.getDate());
+                    personData.put("role", person.getRole().getName().toString());
+
+                    return new ResponseEntity<>(person, HttpStatus.OK);
+                } else {
+                    return new ResponseEntity<>("Token is incorrect", HttpStatus.UNAUTHORIZED);
+                }
             }
         } catch (NullPointerException | SignatureException e) {
             return new ResponseEntity<>("Token is incorrect", HttpStatus.UNAUTHORIZED);

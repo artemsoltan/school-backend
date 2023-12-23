@@ -36,21 +36,6 @@ public class JwtUtil {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public Map<?,?> getData(String token) {
-        Claims claims = Jwts
-                .parserBuilder()
-                .setSigningKey(getSignIngKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        Map<String, String> data = new HashMap<>();
-
-        data.put("username", claims.getSubject());
-        data.put("role", (String) claims.get("role"));
-
-        return data;
-    }
-
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
