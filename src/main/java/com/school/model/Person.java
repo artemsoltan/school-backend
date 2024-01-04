@@ -20,7 +20,6 @@ public class Person {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    @JsonIgnore
     private int id;
 
     @Column(name = "name")
@@ -38,6 +37,9 @@ public class Person {
     @Column(name = "password")
     @JsonIgnore
     private String password;
+
+    @Column(name = "email")
+    private String email;
 
     @ManyToOne
     @JoinColumn(name = "code_id")
@@ -58,13 +60,19 @@ public class Person {
     @JsonIgnore
     private List<Subject> subjects;
 
-    public Person(String name, String surname, String date, String username, String password, Role role, School school) {
+    @ManyToOne
+    @JoinColumn(name = "classes_id")
+    private Classes classes;
+
+    public Person(String name, String surname, String date, String username, String password, String email, Role role, School school, Classes classes) {
         this.name = name;
         this.surname = surname;
         this.date = date;
         this.username = username;
         this.password = password;
+        this.email = email;
         this.role = role;
         this.school = school;
+        this.classes = classes;
     }
 }

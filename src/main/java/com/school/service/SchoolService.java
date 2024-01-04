@@ -1,12 +1,23 @@
 package com.school.service;
 
+import com.school.dto.SchoolDTO;
+import com.school.model.School;
+import com.school.repository.SchoolRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Random;
 
 @Service
 public class SchoolService {
-    public String generateCode() {
+    private final SchoolRepository schoolRepository;
+
+    @Autowired
+    public SchoolService(SchoolRepository schoolRepository) {
+        this.schoolRepository = schoolRepository;
+    }
+
+    private String generateCode() {
         String characters = "abcdefghijklmnopqrstuvwxyz0123456789";
         StringBuilder code = new StringBuilder();
 
@@ -17,5 +28,10 @@ public class SchoolService {
         }
 
         return code.toString();
+    }
+
+    public void saveSchool(SchoolDTO schoolDTO) {
+        School school = new School(generateCode(), schoolDTO.getName(), schoolDTO.getShortname(), schoolDTO.getCity(), schoolDTO.getEmail());
+        schoolRepository.save(school);
     }
 }

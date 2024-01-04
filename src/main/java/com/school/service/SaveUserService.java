@@ -34,8 +34,10 @@ public class SaveUserService {
                                     teacherRegistrationDTO.getDate(),
                                     teacherRegistrationDTO.getUsername(),
                                     passwordEncoder.encode(teacherRegistrationDTO.getPassword()),
+                                    teacherRegistrationDTO.getEmail(),
                                     role,
-                                    school
+                                    school,
+                            null
         );
 
         personRepository.save(person);

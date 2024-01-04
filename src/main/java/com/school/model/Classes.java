@@ -6,15 +6,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "subject")
-public class Subject {
+@Table(name = "classes")
+public class Classes {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -23,9 +21,16 @@ public class Subject {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "ukraine_name")
-    private String uaName;
+    @Column(name = "teacher")
+    private String teacher;
 
-    @ManyToMany(mappedBy = "subjects")
-    private List<Person> people;
+    @ManyToOne
+    @JoinColumn(name = "school_id")
+    private School school;
+
+    public Classes(String name, String teacher, School school) {
+        this.name = name;
+        this.teacher = teacher;
+        this.school = school;
+    }
 }

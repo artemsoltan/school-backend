@@ -26,4 +26,18 @@ public class School {
 
     @Column(name = "shortname")
     private String shortname;
+
+    @Column(name = "city")
+    private String city;
+
+    @Column(name = "email")
+    private String email;
+
+    public School(String code, String name, String shortname, String city, String email) {
+        this.code = code;
+        this.name = name;
+        this.shortname = shortname;
+        this.city = city;
+        this.email = email;
+    }
 }
