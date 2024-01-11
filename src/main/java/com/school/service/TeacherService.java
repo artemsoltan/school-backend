@@ -1,6 +1,7 @@
 package com.school.service;
 
 import com.school.config.jwt.JwtUtil;
+import com.school.dto.ClassDTO;
 import com.school.model.Classes;
 import com.school.model.Person;
 import com.school.model.School;
@@ -65,20 +66,50 @@ public class TeacherService {
         }
     }
 
-    public void newClass(String className, String username) {
+    public void newClass(ClassDTO classDTO, String username) {
         Person person = personRepository.findByUsername(username).orElse(null);
 
         if (person != null && person.getRole().getName().equals(RoleEnum.ROLE_TEACHER)) {
             School school = schoolRepository.findByCode(person.getSchool().getCode());
 
-            if (classesRepository.findBySchool(school) != null && classesRepository.findByName(className) == null) {
-                Classes classes = new Classes(className, username, school);
+            if (classesRepository.findBySchool(school) != null && classesRepository.findByName(classDTO.getName()) == null) {
+                Classes classes = new Classes(classDTO.getName(), classDTO.getTeacher(), school);
                 classesRepository.save(classes);
             } else if (classesRepository.findBySchool(school) == null) {
-                Classes classes = new Classes(className, username, school);
+                Classes classes = new Classes(classDTO.getName(), classDTO.getTeacher(), school);
                 classesRepository.save(classes);
             }
         }
+    }
+
+    public List<String> getAllTeachers(String username) {
+        Person person = personRepository.findByUsername(username).orElse(null);
+        if (person != null) {
+            List<Person> people = personRepository.findAllBySchool(person.getSchool()).orElse(null);
+            if (people != null) {
+                List<String> names = new ArrayList<>();
+                for (Person value : people) {
+                    names.add(value.getName() + " " + value.getSurname());
+                }
+                return names;
+            }
+        }
+        return null;
+    }
+
+    public List<String> getAllClasses(String username) {
+        Person person = personRepository.findByUsername(username).orElse(null);
+        if (person != null && person.getRole().getName().equals(RoleEnum.ROLE_TEACHER)) {
+            List<Classes> classesList = classesRepository.findAllBySchool(person.getSchool());
+            if (classesList != null) {
+                List<String> list = new ArrayList<>();
+                for (Classes classes : classesList) {
+                    list.add(classes.getName());
+                }
+                return list;
+            }
+        }
+        return null;
     }
 
     private String passwordGenerator() {

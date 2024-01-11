@@ -34,13 +34,13 @@ public class JwtFilter extends OncePerRequestFilter {
                 jwt = authHeader.substring(7).trim();
                 username = jwtUtil.extractUsername(jwt);
             } catch (NullPointerException | SignatureException e) {
-                logger.debug("Token is incorrect!");
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT Token");
             }
             catch (ExpiredJwtException e) {
-                logger.debug("Token is expired!");
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token is expired!");
             }
         }
-        if(username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
             SecurityContextHolder.getContext().setAuthentication(token);
         }

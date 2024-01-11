@@ -5,8 +5,12 @@ import com.school.model.School;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface ClassesRepository extends JpaRepository<Classes, Integer> {
-    Classes findBySchool(School school);
+    List<Classes> findBySchool(School school);
     Classes findByName(String name);
+    List<Classes> findAllBySchool(School school);
 }
