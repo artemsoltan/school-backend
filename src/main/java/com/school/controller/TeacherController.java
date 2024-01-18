@@ -10,6 +10,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,71 +28,65 @@ public class TeacherController {
         this.personRepository = personRepository;
     }
 
-    @PostMapping("/setSubjects")
+    @PostMapping("/subjects/set")
     public ResponseEntity<?> setSubject(@RequestBody String[] subjects, @RequestHeader("Authorization") String jwt) {
         jwt = jwt.substring(7);
-        try {
-            if (jwtUtil.isTokenValid(jwt) && !jwtUtil.extractUsername(jwt).isEmpty()) {
-                teacherService.setSubjects(subjects, jwt);
-                return new ResponseEntity<>("Successful!", HttpStatus.OK);
-            }
-        } catch (NullPointerException | SignatureException e) {
-            return new ResponseEntity<>("Token is incorrect!", HttpStatus.UNAUTHORIZED);
-        } catch (ExpiredJwtException e) {
-            return new ResponseEntity<>("Token is expired!", HttpStatus.UNAUTHORIZED);
+
+        if (jwtUtil.isTokenValid(jwt) && !jwtUtil.extractUsername(jwt).isEmpty()) {
+            teacherService.setSubjects(subjects, jwt);
+            return new ResponseEntity<>("Successful!", HttpStatus.OK);
         }
 
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PostMapping("/newClass")
+    @PostMapping("/class/create")
     public ResponseEntity<?> newClass(@RequestBody ClassDTO classDTO, @RequestHeader("Authorization") String jwt) {
         jwt = jwt.substring(7);
         System.out.println(classDTO.toString());
-        try {
-            if (jwtUtil.isTokenValid(jwt) && !jwtUtil.extractUsername(jwt).isEmpty()) {
-                teacherService.newClass(classDTO, jwtUtil.extractUsername(jwt));
-            }
-        } catch (NullPointerException | SignatureException e) {
-            return new ResponseEntity<>("Token is incorrect!", HttpStatus.UNAUTHORIZED);
-        } catch (ExpiredJwtException e) {
-            return new ResponseEntity<>("Token is expired!", HttpStatus.UNAUTHORIZED);
+
+        if (jwtUtil.isTokenValid(jwt) && !jwtUtil.extractUsername(jwt).isEmpty()) {
+            teacherService.newClass(classDTO, jwtUtil.extractUsername(jwt));
         }
 
         return new ResponseEntity<>("This class is exists!",HttpStatus.BAD_REQUEST);
     }
 
-    @GetMapping("/getAllTeachers")
+    @GetMapping("/all")
     public ResponseEntity<?> getAllTeachers(@RequestHeader("Authorization") String jwt) {
         jwt = jwt.substring(7);
-        try {
-            if (jwtUtil.isTokenValid(jwt) && !jwtUtil.extractUsername(jwt).isEmpty()) {
-                List<String> names = teacherService.getAllTeachers(jwtUtil.extractUsername(jwt));
-                return new ResponseEntity<>(names, HttpStatus.OK);
-            }
-        } catch (NullPointerException | SignatureException e) {
-            return new ResponseEntity<>("Token is incorrect!", HttpStatus.UNAUTHORIZED);
-        } catch (ExpiredJwtException e) {
-            return new ResponseEntity<>("Token is expired!", HttpStatus.UNAUTHORIZED);
+        if (jwtUtil.isTokenValid(jwt) && !jwtUtil.extractUsername(jwt).isEmpty()) {
+            List<String> names = teacherService.getAllTeachers(jwtUtil.extractUsername(jwt));
+            return new ResponseEntity<>(names, HttpStatus.OK);
         }
 
         return new ResponseEntity<>("You don`t have permission!",HttpStatus.BAD_REQUEST);
     }
 
-    @GetMapping("/getAllClasses")
+    @GetMapping("/classes/get")
     public ResponseEntity<?> getAllClasses(@RequestHeader("Authorization") String jwt) {
         jwt = jwt.substring(7);
-        try {
-            if (jwtUtil.isTokenValid(jwt) && !jwtUtil.extractUsername(jwt).isEmpty()) {
-                List<String> names = teacherService.getAllClasses(jwtUtil.extractUsername(jwt));
-                return new ResponseEntity<>(names, HttpStatus.OK);
-            }
-        } catch (NullPointerException | SignatureException e) {
-            return new ResponseEntity<>("Token is incorrect!", HttpStatus.UNAUTHORIZED);
-        } catch (ExpiredJwtException e) {
-            return new ResponseEntity<>("Token is expired!", HttpStatus.UNAUTHORIZED);
+
+        if (jwtUtil.isTokenValid(jwt) && !jwtUtil.extractUsername(jwt).isEmpty()) {
+            List<String> names = teacherService.getAllClasses(jwtUtil.extractUsername(jwt));
+            return new ResponseEntity<>(names, HttpStatus.OK);
         }
 
         return new ResponseEntity<>("You don`t have permission!",HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping("/class/delete")
+    public ResponseEntity<?> deleteClass(@RequestHeader("Authorization") String jwt, @RequestBody String className) {
+        jwt = jwt.substring(7);
+        if (jwtUtil.isTokenValid(jwt) && !jwtUtil.extractUsername(jwt).isEmpty()) {
+            try {
+                teacherService.deleteClass(jwtUtil.extractUsername(jwt), className);
+                return new ResponseEntity<>(HttpStatus.OK);
+            } catch (AccessDeniedException e) {
+                return new ResponseEntity<>("You don`t have permission!", HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        return new ResponseEntity<>("You don`t have permission!", HttpStatus.BAD_REQUEST);
     }
 }

@@ -12,6 +12,7 @@ import com.school.repository.SchoolRepository;
 import com.school.repository.SubjectRepository;
 import com.school.util.RoleEnum;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -79,6 +80,18 @@ public class TeacherService {
                 Classes classes = new Classes(classDTO.getName(), classDTO.getTeacher(), school);
                 classesRepository.save(classes);
             }
+        }
+    }
+
+    public void deleteClass(String username, String className) {
+        Person person = personRepository.findByUsername(username).orElse(null);
+        if (person != null && person.getRole().getName().equals(RoleEnum.ROLE_TEACHER)) {
+            Classes classes = classesRepository.findByNameAndSchool(className, person.getSchool()).orElse(null);
+            if (classes != null) {
+                classesRepository.deleteById(classes.getId());
+            }
+        } else {
+            throw new AccessDeniedException("You don`t have permission!");
         }
     }
 

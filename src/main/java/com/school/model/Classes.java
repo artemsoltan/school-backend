@@ -33,4 +33,14 @@ public class Classes {
         this.teacher = teacher;
         this.school = school;
     }
+
+    @Override
+    public String toString() {
+        return "Classes{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", teacher='" + teacher + '\'' +
+                ", school=" + school +
+                '}';
+    }
 }
