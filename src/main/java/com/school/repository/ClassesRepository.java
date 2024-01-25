@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface ClassesRepository extends JpaRepository<Classes, Integer> {
     List<Classes> findBySchool(School school);
-    List<Classes> findByName(String name);
+    Classes findByName(String name);
     List<Classes> findAllBySchool(School school);
     Optional<Classes> findByNameAndSchool(String name, School school);
 }

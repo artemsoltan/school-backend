@@ -64,8 +64,16 @@ public class JwtUtil {
     }
 
     public boolean isTokenValid(String token) {
-        final String username = extractUsername(token);
-        return personRepository.findByUsername(username).isPresent() && !isTokenExpired(token);
+        try {
+            final String username = extractUsername(token);
+            Person person = personRepository.findByUsername(username).orElse(null);
+            if (person != null && !isTokenExpired(token)) {
+                return true;
+            }
+            return false;
+        } catch (ExpiredJwtException | NullPointerException e) {
+            return false;
+        }
     }
 
     public boolean isTokenExpired(String token) {
@@ -89,7 +97,7 @@ public class JwtUtil {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (MalformedJwtException e) {
-            return null;
+            throw new JwtException("Malformed JWT: " + e.getMessage(), e);
         }
     }
 

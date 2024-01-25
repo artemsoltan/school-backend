@@ -70,14 +70,14 @@ public class TeacherService {
     public void newClass(ClassDTO classDTO, String username) {
         Person person = personRepository.findByUsername(username).orElse(null);
 
-        if (person != null && person.getRole().getName().equals(RoleEnum.ROLE_TEACHER)) {
+        if (isPersonTeacher(person)) {
             School school = schoolRepository.findByCode(person.getSchool().getCode());
 
             if (classesRepository.findBySchool(school) != null && classesRepository.findByName(classDTO.getName()) == null) {
-                Classes classes = new Classes(classDTO.getName(), classDTO.getTeacher(), school);
+                Classes classes = new Classes(classDTO.getName(), person, school);
                 classesRepository.save(classes);
             } else if (classesRepository.findBySchool(school) == null) {
-                Classes classes = new Classes(classDTO.getName(), classDTO.getTeacher(), school);
+                Classes classes = new Classes(classDTO.getName(), person, school);
                 classesRepository.save(classes);
             }
         }
@@ -85,7 +85,7 @@ public class TeacherService {
 
     public void deleteClass(String username, String className) {
         Person person = personRepository.findByUsername(username).orElse(null);
-        if (person != null && person.getRole().getName().equals(RoleEnum.ROLE_TEACHER)) {
+        if (isPersonTeacher(person)) {
             Classes classes = classesRepository.findByNameAndSchool(className, person.getSchool()).orElse(null);
             if (classes != null) {
                 classesRepository.deleteById(classes.getId());
@@ -110,19 +110,26 @@ public class TeacherService {
         return null;
     }
 
-    public List<String> getAllClasses(String username) {
+    public List<Classes> getAllClasses(String username) {
         Person person = personRepository.findByUsername(username).orElse(null);
-        if (person != null && person.getRole().getName().equals(RoleEnum.ROLE_TEACHER)) {
+        if (isPersonTeacher(person)) {
             List<Classes> classesList = classesRepository.findAllBySchool(person.getSchool());
             if (classesList != null) {
-                List<String> list = new ArrayList<>();
-                for (Classes classes : classesList) {
-                    list.add(classes.getName());
-                }
-                return list;
+                return classesList;
             }
         }
         return null;
+    }
+
+    public boolean doesTeacherBelongsToTheClass(int id, String username) {
+        Person person = personRepository.findByUsername(username).orElse(null);
+        if (person != null) {
+            if (isPersonTeacher(person)) {
+                Classes classes = classesRepository.findById(id).orElse(null);
+                return classes != null && person.getTeacherClasses().contains(classes);
+            }
+        }
+        return false;
     }
 
     private String passwordGenerator() {
@@ -138,5 +145,9 @@ public class TeacherService {
         }
 
         return password.toString();
+    }
+
+    private boolean isPersonTeacher(Person person) {
+        return person != null && person.getRole().getName().equals(RoleEnum.ROLE_TEACHER);
     }
 }

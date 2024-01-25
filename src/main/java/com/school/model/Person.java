@@ -51,7 +51,7 @@ public class Person {
     @JsonIgnore
     Role role;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "person_subject",
             joinColumns = @JoinColumn(name = "person_id"),
@@ -63,6 +63,9 @@ public class Person {
     @ManyToOne
     @JoinColumn(name = "classes_id")
     private Classes classes;
+
+    @OneToMany(mappedBy = "teacher", fetch = FetchType.LAZY)
+    private List<Classes> teacherClasses;
 
     public Person(String name, String surname, String date, String username, String password, String email, Role role, School school, Classes classes) {
         this.name = name;

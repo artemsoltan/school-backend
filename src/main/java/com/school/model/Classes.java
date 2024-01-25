@@ -1,10 +1,13 @@
 package com.school.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -21,26 +24,19 @@ public class Classes {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "teacher")
-    private String teacher;
-
     @ManyToOne
     @JoinColumn(name = "school_id")
+    @JsonIgnore
     private School school;
 
-    public Classes(String name, String teacher, School school) {
+    @ManyToOne
+    @JoinColumn(name = "teacher_id")
+    @JsonIgnore
+    private Person teacher;
+
+    public Classes(String name, Person teacher, School school) {
         this.name = name;
         this.teacher = teacher;
         this.school = school;
-    }
-
-    @Override
-    public String toString() {
-        return "Classes{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", teacher='" + teacher + '\'' +
-                ", school=" + school +
-                '}';
     }
 }
