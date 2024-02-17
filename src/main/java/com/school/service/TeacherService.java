@@ -2,6 +2,7 @@ package com.school.service;
 
 import com.school.config.jwt.JwtUtil;
 import com.school.dto.ClassDTO;
+import com.school.dto.StudentDTO;
 import com.school.model.Classes;
 import com.school.model.Person;
 import com.school.model.School;
@@ -132,22 +133,7 @@ public class TeacherService {
         return false;
     }
 
-    private String passwordGenerator() {
-        StringBuilder password = new StringBuilder();
-        String characters = "abcdefghijklmnopqrstuvwxyz";
-        Random random = new Random();
-
-        password.append((random.nextInt(900000)+100000));
-
-        for (int i = 0; i < 2; i++) {
-            int index = random.nextInt(characters.length());
-            password.append(characters.charAt(index));
-        }
-
-        return password.toString();
-    }
-
-    private boolean isPersonTeacher(Person person) {
+    public boolean isPersonTeacher(Person person) {
         return person != null && person.getRole().getName().equals(RoleEnum.ROLE_TEACHER);
     }
 }

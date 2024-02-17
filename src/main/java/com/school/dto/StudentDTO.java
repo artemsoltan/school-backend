@@ -10,9 +10,11 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class StudentDTO {
-    private int id;
+    private int classId;
     private String username;
+    private String password;
     private String name;
     private String surname;
     private String date;
+    private String email;
 }
