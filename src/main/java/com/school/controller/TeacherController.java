@@ -3,9 +3,11 @@ package com.school.controller;
 import com.school.config.jwt.JwtUtil;
 import com.school.dto.ClassDTO;
 import com.school.dto.ResponseClassDTO;
+import com.school.dto.StudentDTO;
 import com.school.model.Classes;
 import com.school.repository.ClassesRepository;
 import com.school.repository.PersonRepository;
+import com.school.service.SaveUserService;
 import com.school.service.TeacherService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,12 +25,14 @@ public class TeacherController {
     private final TeacherService teacherService;
     private final PersonRepository personRepository;
     private final ClassesRepository classesRepository;
+    private final SaveUserService saveUserService;
 
-    public TeacherController(JwtUtil jwtUtil, TeacherService teacherService, PersonRepository personRepository, ClassesRepository classesRepository) {
+    public TeacherController(JwtUtil jwtUtil, TeacherService teacherService, PersonRepository personRepository, ClassesRepository classesRepository, SaveUserService saveUserService) {
         this.jwtUtil = jwtUtil;
         this.teacherService = teacherService;
         this.personRepository = personRepository;
         this.classesRepository = classesRepository;
+        this.saveUserService = saveUserService;
     }
 
     @PostMapping("/subjects/set")
@@ -104,6 +108,25 @@ public class TeacherController {
             ResponseClassDTO responseClassDTO = new ResponseClassDTO(classes.getId(), classes.getName(), classes.getTeacher().getName() + " " + classes.getTeacher().getSurname());
             return new ResponseEntity<>(responseClassDTO, HttpStatus.OK);
         }
-        return new ResponseEntity<>("You don't have permission!", HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>("You don't have permission!", HttpStatus.FORBIDDEN);
+    }
+
+    @GetMapping("/class/{id}/students")
+    public ResponseEntity<?> getStudentsByTeacher(@PathVariable("id") int id, @RequestHeader("Authorization") String jwt) {
+        jwt = jwt.substring(7);
+        if (teacherService.doesTeacherBelongsToTheClass(id, jwtUtil.extractUsername(jwt))) {
+            return new ResponseEntity<>(teacherService.getAllStudentsByTeacher(jwtUtil.extractUsername(jwt), id), HttpStatus.OK);
+        }
+        return new ResponseEntity<>("You don't have permission!", HttpStatus.FORBIDDEN);
+    }
+
+    @PostMapping("/class/{id}/students/add")
+    public ResponseEntity<?> addStudentsToClass(@PathVariable("id") int id, @RequestHeader("Authorization") String jwt, @RequestBody List<StudentDTO> students) {
+        jwt = jwt.substring(7);
+        if (teacherService.doesTeacherBelongsToTheClass(id, jwtUtil.extractUsername(jwt))) {
+            saveUserService.saveStudents(id, students, jwtUtil.extractUsername(jwt));
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        return new ResponseEntity<>("You don't have permission!", HttpStatus.FORBIDDEN);
     }
 }

@@ -52,13 +52,13 @@ public class SaveUserService {
         personRepository.save(person);
     }
 
-    public void saveStudents(List<StudentDTO> students, String username) {
+    public void saveStudents(int id, List<StudentDTO> students, String username) {
         Person teacher = personRepository.findByUsername(username).orElse(null);
         Role role = roleRepository.findByName(RoleEnum.ROLE_STUDENT);
         if (isPersonTeacher(teacher)) {
             List<Person> people = new ArrayList<>();
             for (StudentDTO student : students) {
-                Classes classes = classesRepository.findById(student.getClassId()).orElse(null);
+                Classes classes = classesRepository.findById(id).orElse(null);
                 if (classes != null) {
                     people.add(new Person(
                             student.getName(),

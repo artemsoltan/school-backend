@@ -30,15 +30,17 @@ public class TeacherService {
     private final PasswordEncoder passwordEncoder;
     private final ClassesRepository classesRepository;
     private final SchoolRepository schoolRepository;
+    private final SaveUserService saveUserService;
     
     @Autowired
-    public TeacherService(PersonRepository personRepository, SubjectRepository subjectRepository, JwtUtil jwtUtil, PasswordEncoder passwordEncoder, ClassesRepository classesRepository, SchoolRepository schoolRepository) {
+    public TeacherService(PersonRepository personRepository, SubjectRepository subjectRepository, JwtUtil jwtUtil, PasswordEncoder passwordEncoder, ClassesRepository classesRepository, SchoolRepository schoolRepository, SaveUserService saveUserService) {
         this.personRepository = personRepository;
         this.subjectRepository = subjectRepository;
         this.jwtUtil = jwtUtil;
         this.passwordEncoder = passwordEncoder;
         this.classesRepository = classesRepository;
         this.schoolRepository = schoolRepository;
+        this.saveUserService = saveUserService;
     }
 
     public boolean isPersonHasSubjects(Person person) {
@@ -131,6 +133,15 @@ public class TeacherService {
             }
         }
         return false;
+    }
+
+    public List<Person> getAllStudentsByTeacher(String username, int classId) {
+        Person teacher = personRepository.findByUsername(username).orElse(null);
+        if (isPersonTeacher(teacher)) {
+            List<Person> students = personRepository.findAllByStudentClass(teacher.getTeacherClasses().get(classId)).orElse(null);
+            return students;
+        }
+        return null;
     }
 
     public boolean isPersonTeacher(Person person) {

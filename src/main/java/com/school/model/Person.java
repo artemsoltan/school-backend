@@ -62,12 +62,12 @@ public class Person {
 
     @ManyToOne
     @JoinColumn(name = "classes_id")
-    private Classes classes;
+    private Classes studentClass;
 
     @OneToMany(mappedBy = "teacher", fetch = FetchType.LAZY)
     private List<Classes> teacherClasses;
 
-    public Person(String name, String surname, String date, String username, String password, String email, Role role, School school, Classes classes) {
+    public Person(String name, String surname, String date, String username, String password, String email, Role role, School school, Classes studentClass) {
         this.name = name;
         this.surname = surname;
         this.date = date;
@@ -76,6 +76,6 @@ public class Person {
         this.email = email;
         this.role = role;
         this.school = school;
-        this.classes = classes;
+        this.studentClass = studentClass;
     }
 }
