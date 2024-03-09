@@ -2,7 +2,7 @@ package com.school.service;
 
 import com.school.dto.StudentDTO;
 import com.school.dto.TeacherRegistrationDTO;
-import com.school.model.Classes;
+import com.school.model.SchoolClass;
 import com.school.model.Person;
 import com.school.model.Role;
 import com.school.model.School;
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 @Service
 public class SaveUserService {
@@ -58,8 +57,8 @@ public class SaveUserService {
         if (isPersonTeacher(teacher)) {
             List<Person> people = new ArrayList<>();
             for (StudentDTO student : students) {
-                Classes classes = classesRepository.findById(id).orElse(null);
-                if (classes != null) {
+                SchoolClass schoolClass = classesRepository.findById(id).orElse(null);
+                if (schoolClass != null) {
                     people.add(new Person(
                             student.getName(),
                             student.getSurname(),
@@ -69,7 +68,7 @@ public class SaveUserService {
                             student.getEmail(),
                             role,
                             teacher.getSchool(),
-                            classes
+                            schoolClass
                     ));
                 }
             }

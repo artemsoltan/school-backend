@@ -15,7 +15,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @Entity
 @Table(name = "classes")
-public class Classes {
+public class SchoolClass {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -34,9 +34,22 @@ public class Classes {
     @JsonIgnore
     private Person teacher;
 
-    public Classes(String name, Person teacher, School school) {
+    public SchoolClass(String name, Person teacher, School school) {
         this.name = name;
         this.teacher = teacher;
         this.school = school;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SchoolClass schoolClass = (SchoolClass) o;
+        return id == schoolClass.id && Objects.equals(name, schoolClass.name) && Objects.equals(school, schoolClass.school) && Objects.equals(teacher, schoolClass.teacher);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, school, teacher);
     }
 }

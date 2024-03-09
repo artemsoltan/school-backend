@@ -1,7 +1,6 @@
 package com.school.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -62,12 +61,12 @@ public class Person {
 
     @ManyToOne
     @JoinColumn(name = "classes_id")
-    private Classes studentClass;
+    private SchoolClass studentClass;
 
     @OneToMany(mappedBy = "teacher", fetch = FetchType.LAZY)
-    private List<Classes> teacherClasses;
+    private List<SchoolClass> teacherClasses;
 
-    public Person(String name, String surname, String date, String username, String password, String email, Role role, School school, Classes studentClass) {
+    public Person(String name, String surname, String date, String username, String password, String email, Role role, School school, SchoolClass studentClass) {
         this.name = name;
         this.surname = surname;
         this.date = date;

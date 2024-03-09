@@ -1,6 +1,6 @@
 package com.school.repository;
 
-import com.school.model.Classes;
+import com.school.model.SchoolClass;
 import com.school.model.School;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ClassesRepository extends JpaRepository<Classes, Integer> {
-    List<Classes> findBySchool(School school);
-    Classes findByName(String name);
-    List<Classes> findAllBySchool(School school);
-    Optional<Classes> findByNameAndSchool(String name, School school);
+public interface ClassesRepository extends JpaRepository<SchoolClass, Integer> {
+    List<SchoolClass> findBySchool(School school);
+    SchoolClass findByName(String name);
+    List<SchoolClass> findAllBySchool(School school);
+    Optional<SchoolClass> findByNameAndSchool(String name, School school);
 }

@@ -4,22 +4,30 @@ import com.school.config.jwt.JwtUtil;
 import com.school.dto.ClassDTO;
 import com.school.dto.ResponseClassDTO;
 import com.school.dto.StudentDTO;
-import com.school.model.Classes;
+import com.school.exception.StudentInvalidCredentialsException;
+import com.school.model.SchoolClass;
+import com.school.model.Person;
 import com.school.repository.ClassesRepository;
 import com.school.repository.PersonRepository;
 import com.school.service.SaveUserService;
 import com.school.service.TeacherService;
+import com.school.util.ErrorModel;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/teacher")
+@Validated
 public class TeacherController {
     private final JwtUtil jwtUtil;
     private final TeacherService teacherService;
@@ -63,15 +71,20 @@ public class TeacherController {
         jwt = jwt.substring(7);
 
         if (jwtUtil.isTokenValid(jwt) && !jwtUtil.extractUsername(jwt).isEmpty()) {
-            List<Classes> classes = teacherService.getAllClasses(jwtUtil.extractUsername(jwt));
-            List<ResponseClassDTO> responseClassDTOList = new ArrayList<>();
-            for (Classes item : classes) {
-                responseClassDTOList.add(new ResponseClassDTO(item.getId(), item.getName(), item.getTeacher().getName() + " " + item.getTeacher().getSurname()));
+            List<SchoolClass> aClasses = teacherService.getAllClasses(jwtUtil.extractUsername(jwt));
+            if (aClasses != null) {
+                List<ResponseClassDTO> responseClassDTOList = new ArrayList<>();
+                for (SchoolClass item : aClasses) {
+                    if (item != null) {
+                        responseClassDTOList.add(new ResponseClassDTO(item.getId(), item.getName(), item.getTeacher().getName() + " " + item.getTeacher().getSurname()));
+                    }
+                }
+                return new ResponseEntity<>(responseClassDTOList, HttpStatus.OK);
             }
-            return new ResponseEntity<>(responseClassDTOList, HttpStatus.OK);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        return new ResponseEntity<>("You don't have permission!",HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>("You don't have permission!", HttpStatus.BAD_REQUEST);
     }
 
     @PostMapping("/class/delete")
@@ -104,8 +117,8 @@ public class TeacherController {
     public ResponseEntity<?> getClassById(@PathVariable("id") int id, @RequestHeader("Authorization") String jwt){
         jwt = jwt.substring(7);
         if (teacherService.doesTeacherBelongsToTheClass(id, jwtUtil.extractUsername(jwt))) {
-            Classes classes = classesRepository.findById(id).orElse(null);
-            ResponseClassDTO responseClassDTO = new ResponseClassDTO(classes.getId(), classes.getName(), classes.getTeacher().getName() + " " + classes.getTeacher().getSurname());
+            SchoolClass schoolClass = classesRepository.findById(id).orElse(null);
+            ResponseClassDTO responseClassDTO = new ResponseClassDTO(schoolClass.getId(), schoolClass.getName(), schoolClass.getTeacher().getName() + " " + schoolClass.getTeacher().getSurname());
             return new ResponseEntity<>(responseClassDTO, HttpStatus.OK);
         }
         return new ResponseEntity<>("You don't have permission!", HttpStatus.FORBIDDEN);
@@ -117,16 +130,50 @@ public class TeacherController {
         if (teacherService.doesTeacherBelongsToTheClass(id, jwtUtil.extractUsername(jwt))) {
             return new ResponseEntity<>(teacherService.getAllStudentsByTeacher(jwtUtil.extractUsername(jwt), id), HttpStatus.OK);
         }
+        return new ResponseEntity<>("You don't have permission!", HttpStatus.BAD_REQUEST);
+    }
+
+    @PostMapping("/class/{id}/students")
+    public ResponseEntity<?> addStudentsToClass(@PathVariable("id") int id,
+                                                @RequestHeader("Authorization") String jwt,
+                                                @RequestBody @Valid List<StudentDTO> students,
+                                                BindingResult bindingResult) {
+            if (students.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+
+            if (bindingResult.hasErrors()) {
+                throw new StudentInvalidCredentialsException();
+            }
+
+            jwt = jwt.substring(7);
+            if (teacherService.doesTeacherBelongsToTheClass(id, jwtUtil.extractUsername(jwt))) {
+                saveUserService.saveStudents(id, students, jwtUtil.extractUsername(jwt));
+                return new ResponseEntity<>(HttpStatus.OK);
+            }
         return new ResponseEntity<>("You don't have permission!", HttpStatus.FORBIDDEN);
     }
 
-    @PostMapping("/class/{id}/students/add")
-    public ResponseEntity<?> addStudentsToClass(@PathVariable("id") int id, @RequestHeader("Authorization") String jwt, @RequestBody List<StudentDTO> students) {
+    @DeleteMapping("/class/{id}/student")
+    public ResponseEntity<?> deleteStudent(@PathVariable("id") int id, @RequestParam("email") String email, @RequestHeader("Authorization") String jwt) {
         jwt = jwt.substring(7);
+
         if (teacherService.doesTeacherBelongsToTheClass(id, jwtUtil.extractUsername(jwt))) {
-            saveUserService.saveStudents(id, students, jwtUtil.extractUsername(jwt));
-            return new ResponseEntity<>(HttpStatus.OK);
+            System.out.println(email);
+            Person person = personRepository.findByEmail(email).orElse(null);
+            if (person != null) {
+                personRepository.delete(person);
+                return new ResponseEntity<>(HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("Student don't found!", HttpStatus.BAD_REQUEST);
+            }
         }
         return new ResponseEntity<>("You don't have permission!", HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler({StudentInvalidCredentialsException.class, HttpMessageNotReadableException.class, ConstraintViolationException.class})
+    public ResponseEntity<ErrorModel> handleException(Exception e) {
+        ErrorModel errorModel = new ErrorModel("Bad request", "Invalid credentials or data", "Неправильні облікові дані або дані!");
+        return new ResponseEntity<>(errorModel, HttpStatus.BAD_REQUEST);
     }
 }
