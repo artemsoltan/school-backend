@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ClassesRepository extends JpaRepository<SchoolClass, Integer> {
+public interface SchoolClassRepository extends JpaRepository<SchoolClass, Integer> {
     List<SchoolClass> findBySchool(School school);
     SchoolClass findByName(String name);
     List<SchoolClass> findAllBySchool(School school);

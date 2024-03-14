@@ -1,4 +1,4 @@
-package com.school.dto;
+package com.school.dto.register;
 
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -17,7 +17,7 @@ public class StudentDTO {
     private String username;
 
     @NotEmpty
-    @Size(min = 8)
+    @Size(min = 6)
     private String password;
 
     @NotEmpty

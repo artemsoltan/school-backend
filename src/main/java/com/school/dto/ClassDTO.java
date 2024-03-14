@@ -11,13 +11,13 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ClassDTO {
     private String name;
-    private String teacher;
+    private String teacherUsername;
 
     @Override
     public String toString() {
         return "ClassDTO{" +
                 "name='" + name + '\'' +
-                ", teacher='" + teacher + '\'' +
+                ", teacherUsername='" + teacherUsername + '\'' +
                 '}';
     }
 }

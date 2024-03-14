@@ -1,5 +1,6 @@
 package com.school.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,5 +28,6 @@ public class Subject {
     private String uaName;
 
     @ManyToMany(mappedBy = "subjects")
+    @JsonIgnore
     private List<Person> people;
 }

@@ -56,7 +56,6 @@ public class Person {
             joinColumns = @JoinColumn(name = "person_id"),
             inverseJoinColumns = @JoinColumn(name = "subject_id")
     )
-    @JsonIgnore
     private List<Subject> subjects;
 
     @ManyToOne
@@ -76,5 +75,23 @@ public class Person {
         this.role = role;
         this.school = school;
         this.studentClass = studentClass;
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", surname='" + surname + '\'' +
+                ", date='" + date + '\'' +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", email='" + email + '\'' +
+                ", school=" + school +
+                ", role=" + role +
+                ", subjects=" + subjects +
+                ", studentClass=" + studentClass +
+                ", teacherClasses=" + teacherClasses +
+                '}';
     }
 }

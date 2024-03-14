@@ -52,4 +52,14 @@ public class SchoolClass {
     public int hashCode() {
         return Objects.hash(id, name, school, teacher);
     }
+
+    @Override
+    public String toString() {
+        return "SchoolClass{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", school=" + school +
+                ", teacher=" + teacher +
+                '}';
+    }
 }
