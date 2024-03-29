@@ -33,6 +33,6 @@ public class TeacherDTO {
     private String email;
 
     @NotEmpty
-    @Size(min = 6)
+    @Size(min = 4)
     private String password;
 }

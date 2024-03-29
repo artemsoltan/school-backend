@@ -22,9 +22,8 @@ public class GuestController {
         this.schoolRepository = schoolRepository;
     }
 
-    @PostMapping("/school/create")
+    @PostMapping("/school")
     public ResponseEntity<?> createSchool(@RequestBody SchoolDTO schoolDTO) {
-        System.out.println(schoolDTO.toString());
         if (schoolRepository.findByEmail(schoolDTO.getEmail()) == null) {
             schoolService.saveSchool(schoolDTO);
             return new ResponseEntity<>(HttpStatus.OK);

@@ -1,6 +1,8 @@
 package com.school.config.jwt;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -35,7 +37,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 username = jwtUtil.extractUsername(jwt);
             } catch (NullPointerException | SignatureException e) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT Token");
-            } catch (ExpiredJwtException e) {
+            } catch (JwtException e) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token is expired!");
             }
         }

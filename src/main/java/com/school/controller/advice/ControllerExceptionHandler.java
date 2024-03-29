@@ -3,6 +3,7 @@ package com.school.controller.advice;
 import com.school.exception.NotAccessException;
 import com.school.exception.InvalidCredentialsException;
 import com.school.util.ErrorModel;
+import io.jsonwebtoken.MalformedJwtException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,4 +26,9 @@ public class ControllerExceptionHandler {
         return new ResponseEntity<>(errorModel, HttpStatus.FORBIDDEN);
     }
 
+    @ExceptionHandler(MalformedJwtException.class)
+    public ResponseEntity<ErrorModel> handleJwtStructureException(Exception e) {
+        ErrorModel errorModel = new ErrorModel("Forbidden", "Invalid JWT token!", "Недійнсий JWT токен!");
+        return new ResponseEntity<>(errorModel, HttpStatus.FORBIDDEN);
+    }
 }
